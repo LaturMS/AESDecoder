@@ -6,14 +6,6 @@
 
 #include "decoder.h"
 
-//#include <sstream>
-//#include <stdio.h>
-//#include <iomanip>
-//#include <algorithm>
-
-//#include <openssl/evp.h>
-//#include <openssl/aes.h>
-
 enum decoderFunctions {none= -1, encrypt = 1, decrypt = 2};
 
 bool openFile(std::ifstream* file, char* filePath);
