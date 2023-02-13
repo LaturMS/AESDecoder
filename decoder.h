@@ -11,15 +11,16 @@ private:
     std::ifstream* keyFile;
     std::fstream* outputFile;
 
-    bool loadDataFromKeyFile();
-    bool loadDataFromCiphertextFile();
-    bool loadDataFromPlaintextFile();
+    bool loadDataFromKeyFile(std::string* iv, std::string* key);
+    bool loadDataFromCiphertextFile(std::string* sha, std::string* data);
+    bool loadDataFromPlaintextFile(std::string *data);
 
     bool makeAndWriteDataToCiphertextFile();
     bool makeAndWriteDataToDecipheredTextFile();
 
     void hex_print(const void* pv, size_t len);
     void hexStringToChar(unsigned char *dataout, std::string datain);
+    void fromAsciiToString(unsigned char *datain, int length);
 
 public:
     Decoder(std::ifstream* inputFile, std::ifstream* keyFile, std::fstream* outputFile);

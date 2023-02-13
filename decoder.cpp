@@ -24,17 +24,17 @@ void Decoder::encrypt()
     printf("Start encrypt.\n");
     std::string key; std::string ivData; std::string message;
 
+    loadDataFromPlaintextFile(&message);
+    loadDataFromKeyFile(&ivData, &key);
+
     size_t inputslength = message.length();
     unsigned char aes_input[inputslength];
     unsigned char aes_key[AES_KEYLENGTH];
     memset(aes_input, 0, inputslength/8);
     memset(aes_key, 0, AES_KEYLENGTH/8);
 
-//    stringToHexChar(message, aes_input);
     hexStringToChar(aes_key, key);
-
     strcpy((char*) aes_input, message.c_str());
-//    strcpy((char*) aes_key, key.c_str());
 
     /* init vector */
     unsigned char iv[AES_BLOCK_SIZE];
@@ -57,7 +57,7 @@ void Decoder::encrypt()
     printf("encrypt:\t");
     hex_print(enc_out, sizeof(enc_out));
 
-//    fromAsciiToString(dec_out, sizeof(enc_out));
+    fromAsciiToString(enc_out, sizeof(enc_out));
 
     std::stringstream ss;
     for(int i = 0; i < encslength; i++)
@@ -70,15 +70,18 @@ void Decoder::decrypt()
 {
     printf("Start decrypt.\n");
 
-    std::string key; std::string ivData; std::string message;
+    std::string sha, key, ivData, data;
 
-    size_t inputslength = message.length()/2;
+    loadDataFromKeyFile(&ivData, &key);
+    loadDataFromCiphertextFile(&sha, &data);
+
+    size_t inputslength = data.length()/2;
     unsigned char aes_input[inputslength];
     unsigned char aes_key[AES_KEYLENGTH];
     memset(aes_input, 0, inputslength/8);
     memset(aes_key, 0, AES_KEYLENGTH/8);
 
-    hexStringToChar(aes_input, message);
+    hexStringToChar(aes_input, data);
     hexStringToChar(aes_key, key);
 
     /* init vector */
@@ -101,13 +104,55 @@ void Decoder::decrypt()
     printf("decrypt:\t");
     hex_print(dec_out, sizeof(dec_out));
 
-//    fromAsciiToString(dec_out, sizeof(enc_out));
+    fromAsciiToString(dec_out, sizeof(dec_out));
 
     std::stringstream ss;
     for(int i = 0; i < inputslength; i++)
     {
         ss << enc_out[i];
     }
+}
+
+bool Decoder::loadDataFromKeyFile(std::string* iv, std::string* key)
+{
+    if(!keyFile->eof())
+        getline( *keyFile, *iv );
+    else
+        return false;
+
+    if(!keyFile->eof())
+        getline( *keyFile, *key );
+    else
+        return false;
+
+    return true;
+}
+
+bool Decoder::loadDataFromCiphertextFile(std::string* sha, std::string* data)
+{
+    if(!inputFile->eof())
+        getline( *inputFile, *sha );
+    else
+        return false;
+
+    if(!inputFile->eof())
+        getline( *inputFile, *data );
+    else
+        return false;
+
+    return true;
+}
+
+bool Decoder::loadDataFromPlaintextFile(std::string* data)
+{
+    std::string line;
+    while( !inputFile->eof() )
+    {
+        getline( *inputFile, line );
+        *data += line + "\n";
+    }
+
+    return true;
 }
 
 // a simple hex-print routine. could be modified to print 16 bytes-per-line
@@ -137,4 +182,11 @@ void Decoder::hexStringToChar(unsigned char *dataout, std::string datain)
         char chr = (char) (int)strtol(byte.c_str(), NULL, 16);
         dataout[j] = chr;
     }
+}
+
+void Decoder::fromAsciiToString(unsigned char *datain, int length)
+{
+    for(int i = 0; i < length; i++)
+        printf("%c", datain[i]);
+    printf("\n");
 }
