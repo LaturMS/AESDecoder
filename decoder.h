@@ -9,7 +9,7 @@ class Decoder
 private:
     std::ifstream* inputFile;
     std::ifstream* keyFile;
-    std::fstream* outputFile;
+    std::string outputPath;
 
     bool makeAndWriteDataToDecipheredTextFile(std::string path, std::string data);
     bool makeAndWriteDataToCiphertextFile(std::string path, std::string sha, std::string data);
@@ -27,7 +27,7 @@ private:
 
     std::string charToHexString(const void *pv, size_t len);
 public:
-    Decoder(std::ifstream* inputFile, std::ifstream* keyFile, std::fstream* outputFile);
+    Decoder(std::ifstream* inputFile, std::ifstream* keyFile, std::string outputPath);
 
     void encrypt();
     void decrypt();

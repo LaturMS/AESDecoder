@@ -12,13 +12,15 @@
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 
+#include "sha256.h"
+
 #define AES_KEYLENGTH 256
 
-Decoder::Decoder(std::ifstream *inputFile, std::ifstream *keyFile, std::fstream *outputFile)
+Decoder::Decoder(std::ifstream *inputFile, std::ifstream *keyFile, std::string outputPath)
 {
     this->inputFile = inputFile;
     this->keyFile = keyFile;
-    this->outputFile = outputFile;
+    this->outputPath = outputPath;
 }
 
 void Decoder::encrypt()
@@ -61,8 +63,9 @@ void Decoder::encrypt()
 
     std::string sha, enc_out_string;
     enc_out_string = charToHexString(enc_out, sizeof(enc_out));
+    sha = sha256(message);
 
-    if(!makeAndWriteDataToCiphertextFile("C:/Users/Latur/Desktop/aesPliki/deciphered_text3.txt", sha, enc_out_string)) printf("Nie udalo sie zapisac\n");
+    if(!makeAndWriteDataToCiphertextFile(outputPath, sha, enc_out_string)) printf("Nie udalo sie zapisac\n");
 }
 
 void Decoder::decrypt()
@@ -104,7 +107,7 @@ void Decoder::decrypt()
     hex_print(dec_out, sizeof(dec_out));
 
     std::string dec_out_string(reinterpret_cast<char*>(dec_out));
-    std::string shaFromString;
+    std::string shaFromString = sha256(dec_out_string);
 
 
     if (sha.compare(shaFromString) != 0) {
@@ -112,7 +115,7 @@ void Decoder::decrypt()
         return;
     }
 
-    if(!makeAndWriteDataToDecipheredTextFile("C:/Users/Latur/Desktop/aesPliki/deciphered_text2.txt", dec_out_string)) printf("Nie udalo sie zapisac\n");
+    if(!makeAndWriteDataToDecipheredTextFile(outputPath, dec_out_string)) printf("Nie udalo sie zapisac\n");
 }
 
 bool Decoder::makeAndWriteDataToDecipheredTextFile(std::string path, std::string data)
@@ -233,3 +236,4 @@ void Decoder::fromAsciiToString(unsigned char *datain, int length)
 std::string Decoder::charToHexString(const void* pv, size_t len)
 {
     std::stringstream stream;
+}

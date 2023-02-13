@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         if(!openFile(&inputFile, inputFileDirector)) return false;
         if(!openFile(&keyFile, keyFileDirector)) return false;
 
-        Decoder decoder(&inputFile, &keyFile, &outputFile);
+        Decoder decoder(&inputFile, &keyFile, outputFileDirector);
 
         switch (whatToDo) {
         case encrypt:
