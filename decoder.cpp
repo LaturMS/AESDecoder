@@ -29,6 +29,19 @@ void Decoder::encrypt()
     std::string key; std::string ivData; std::string message;
 
     loadDataFromPlaintextFile(&message);
+    if(keyFile == NULL)
+    {
+        std::string newFileName = "aes_key_new.txt";
+        printf("Przez brak pliku z kluczem zostal wygenerowany nowy klucz do pliku \"%s\"\n", newFileName.c_str());
+        std::size_t found = outputPath.find_last_of("/\\");
+        std::string newDirector = outputPath.substr(0,found+1) + newFileName;
+
+        key = generateIV();
+        ivData = generateKey();
+
+        if(!makeAndWriteDataToNewKeyFile(newDirector, ivData, key)) printf("Nie udalo sie zapisac nowego klucza\n");
+    }
+    else
     loadDataFromKeyFile(&ivData, &key);
 
     size_t inputslength = message.length();
@@ -116,6 +129,25 @@ void Decoder::decrypt()
     }
 
     if(!makeAndWriteDataToDecipheredTextFile(outputPath, dec_out_string)) printf("Nie udalo sie zapisac\n");
+}
+
+bool Decoder::makeAndWriteDataToNewKeyFile(std::string path, std::string iv, std::string key)
+{
+    std::fstream* file;
+    file = new std::fstream(path, std::ios::out);
+    if(file->good())
+    {
+        std::string nextLine = "\n";
+        file->write(iv.c_str(), iv.length());
+        file->write(nextLine.c_str(), nextLine.length());
+        file->write(key.c_str(), key.length());
+        file->flush();
+    }
+    else
+        return false;
+
+    file->close();
+    return true;
 }
 
 bool Decoder::makeAndWriteDataToDecipheredTextFile(std::string path, std::string data)
@@ -236,4 +268,27 @@ void Decoder::fromAsciiToString(unsigned char *datain, int length)
 std::string Decoder::charToHexString(const void* pv, size_t len)
 {
     std::stringstream stream;
+}
+
+std::string Decoder::random_string( size_t length )
+{
+    auto randchar = []() -> char
+    {
+        const char charset[] = "0123456789ABCDEF";
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[ rand() % max_index ];
+    };
+    std::string str(length,0);
+    std::generate_n( str.begin(), length, randchar );
+    return str;
+}
+
+std::string Decoder::generateIV()
+{
+    return random_string(64);
+}
+
+std::string Decoder::generateKey()
+{
+    return random_string(32);
 }

@@ -11,6 +11,7 @@ private:
     std::ifstream* keyFile;
     std::string outputPath;
 
+    bool makeAndWriteDataToNewKeyFile(std::string path, std::string iv, std::string key);
     bool makeAndWriteDataToDecipheredTextFile(std::string path, std::string data);
     bool makeAndWriteDataToCiphertextFile(std::string path, std::string sha, std::string data);
 
@@ -26,6 +27,10 @@ private:
     void fromAsciiToString(unsigned char *datain, int length);
 
     std::string charToHexString(const void *pv, size_t len);
+
+    std::string random_string(size_t length);
+    std::string generateIV();
+    std::string generateKey();
 public:
     Decoder(std::ifstream* inputFile, std::ifstream* keyFile, std::string outputPath);
 
