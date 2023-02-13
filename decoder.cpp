@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
+#include <iomanip>
+#include <algorithm>
 
 #include <openssl/evp.h>
 #include <openssl/aes.h>
@@ -49,21 +51,18 @@ void Decoder::encrypt()
     memset(dec_out, 0, sizeof(dec_out));
 
     AES_KEY enc_key;
-//    AES_set_encrypt_key(aes_key, AES_KEYLENGTH, &enc_key);
-//    AES_cbc_encrypt(aes_input, enc_out, inputslength, &enc_key, iv, AES_ENCRYPT);
+    AES_set_encrypt_key(aes_key, AES_KEYLENGTH, &enc_key);
+    AES_cbc_encrypt(aes_input, enc_out, inputslength, &enc_key, iv, AES_ENCRYPT);
 
     printf("original:\t");
     hex_print(aes_input, sizeof(aes_input));
     printf("encrypt:\t");
     hex_print(enc_out, sizeof(enc_out));
 
-    fromAsciiToString(enc_out, sizeof(enc_out));
+    std::string sha, enc_out_string;
+    enc_out_string = charToHexString(enc_out, sizeof(enc_out));
 
-    std::stringstream ss;
-    for(int i = 0; i < encslength; i++)
-    {
-        ss << enc_out[i];
-    }
+    if(!makeAndWriteDataToCiphertextFile("C:/Users/Latur/Desktop/aesPliki/deciphered_text3.txt", sha, enc_out_string)) printf("Nie udalo sie zapisac\n");
 }
 
 void Decoder::decrypt()
@@ -96,21 +95,59 @@ void Decoder::decrypt()
     memset(dec_out, 0, sizeof(dec_out));
 
     AES_KEY dec_key;
-//    AES_set_decrypt_key(aes_key, AES_KEYLENGTH, &dec_key);
-//    AES_cbc_encrypt(aes_input, dec_out, inputslength, &dec_key, iv, AES_DECRYPT);
+    AES_set_decrypt_key(aes_key, AES_KEYLENGTH, &dec_key);
+    AES_cbc_encrypt(aes_input, dec_out, inputslength, &dec_key, iv, AES_DECRYPT);
 
     printf("original:\t");
     hex_print(aes_input, sizeof(aes_input));
     printf("decrypt:\t");
     hex_print(dec_out, sizeof(dec_out));
 
-    fromAsciiToString(dec_out, sizeof(dec_out));
+    std::string dec_out_string(reinterpret_cast<char*>(dec_out));
+    std::string shaFromString;
 
-    std::stringstream ss;
-    for(int i = 0; i < inputslength; i++)
-    {
-        ss << enc_out[i];
+
+    if (sha.compare(shaFromString) != 0) {
+        printf("Brak zgodnosci.\n");
+        return;
     }
+
+    if(!makeAndWriteDataToDecipheredTextFile("C:/Users/Latur/Desktop/aesPliki/deciphered_text2.txt", dec_out_string)) printf("Nie udalo sie zapisac\n");
+}
+
+bool Decoder::makeAndWriteDataToDecipheredTextFile(std::string path, std::string data)
+{
+    std::fstream* file;
+    file = new std::fstream(path, std::ios::out);
+    if(file->good())
+    {
+        file->write(data.c_str(), data.length());
+        file->flush();
+    }
+    else
+        return false;
+
+    file->close();
+    return true;
+}
+
+bool Decoder::makeAndWriteDataToCiphertextFile(std::string path, std::string sha, std::string data)
+{
+    std::fstream* file;
+    file = new std::fstream(path, std::ios::out);
+    if(file->good())
+    {
+        std::string nextLine = "\n";
+        file->write(sha.c_str(), sha.length());
+        file->write(nextLine.c_str(), nextLine.length());
+        file->write(data.c_str(), data.length());
+        file->flush();
+    }
+    else
+        return false;
+
+    file->close();
+    return true;
 }
 
 bool Decoder::loadDataFromKeyFile(std::string* iv, std::string* key)
@@ -125,6 +162,7 @@ bool Decoder::loadDataFromKeyFile(std::string* iv, std::string* key)
     else
         return false;
 
+    keyFile->close();
     return true;
 }
 
@@ -140,6 +178,7 @@ bool Decoder::loadDataFromCiphertextFile(std::string* sha, std::string* data)
     else
         return false;
 
+    inputFile->close();
     return true;
 }
 
@@ -152,6 +191,7 @@ bool Decoder::loadDataFromPlaintextFile(std::string* data)
         *data += line + "\n";
     }
 
+    inputFile->close();
     return true;
 }
 
@@ -166,7 +206,6 @@ void Decoder::hex_print(const void* pv, size_t len)
         size_t i = 0;
         for (; i<len;++i)
         {
-//            if(i % 16 == 0) printf(" | ");
             printf("%02X", *p++);
         }
     }
@@ -190,3 +229,7 @@ void Decoder::fromAsciiToString(unsigned char *datain, int length)
         printf("%c", datain[i]);
     printf("\n");
 }
+
+std::string Decoder::charToHexString(const void* pv, size_t len)
+{
+    std::stringstream stream;
