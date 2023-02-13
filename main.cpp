@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     std::ifstream keyFile;
     std::fstream outputFile;
 
+    //DELETE ME
     for(int i = 0; i < argc; i++)
     {
         printf("argv[%d]: %s\n", i, argv[i]);
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
         if(!openFile(&inputFile, inputFileDirector)) return false;
         if(!openFile(&keyFile, keyFileDirector)) return false;
 
-        Decoder decoder;
+        Decoder decoder(&inputFile, &keyFile, &outputFile);
 
         switch (whatToDo) {
         case encrypt:
@@ -108,7 +109,7 @@ bool openFile(std::ifstream* file, char* filePath)
     file->open(filePath);
     if(!file->good())
     {
-        printf("Can not open file: %s\n", filePath);
+        printf("Nie mozna otworzyc pliku: %s\n", filePath);
         return false;
     }
 
