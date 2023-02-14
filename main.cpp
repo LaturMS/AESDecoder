@@ -22,14 +22,6 @@ int main(int argc, char *argv[])
     std::ifstream keyFile;
     std::fstream outputFile;
 
-    //DELETE ME
-    for(int i = 0; i < argc; i++)
-    {
-        printf("argv[%d]: %s\n", i, argv[i]);
-    }
-
-    printf("\n\n");
-
     std::map<std::string,int> switchmap
     {
         {"-e", 1},
