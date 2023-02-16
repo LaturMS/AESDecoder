@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
 {
     bool isGenerateNewKey = false;
     decoderFunctions whatToDo = none;
-    char* inputFileDirector;
-    char* outputFileDirector;
-    char* keyFileDirector;
+    char* inputFileDirector = NULL;
+    char* outputFileDirector = NULL;
+    char* keyFileDirector = NULL;
 
     std::ifstream inputFile;
     std::ifstream keyFile;

@@ -29,29 +29,29 @@ void Decoder::encrypt()
     std::string key; std::string ivData; std::string message;
 
     loadDataFromPlaintextFile(&message);
-    if(keyFile == NULL)
+    if (keyFile == NULL)
     {
         std::string newFileName = "aes_key_new.txt";
         printf("Przez brak pliku z kluczem zostal wygenerowany nowy klucz do pliku \"%s\"\n", newFileName.c_str());
         std::size_t found = outputPath.find_last_of("/\\");
-        std::string newDirector = outputPath.substr(0,found+1) + newFileName;
+        std::string newDirector = outputPath.substr(0, found + 1) + newFileName;
 
         key = generateIV();
         ivData = generateKey();
 
-        if(!makeAndWriteDataToNewKeyFile(newDirector, ivData, key)) printf("Nie udalo sie zapisac nowego klucza\n");
+        if (!makeAndWriteDataToNewKeyFile(newDirector, ivData, key)) printf("Nie udalo sie zapisac nowego klucza\n");
     }
     else
-    loadDataFromKeyFile(&ivData, &key);
+        loadDataFromKeyFile(&ivData, &key);
 
     size_t inputslength = message.length();
-    unsigned char aes_input[inputslength];
+    unsigned char *aes_input = new unsigned char[inputslength];
     unsigned char aes_key[AES_KEYLENGTH];
-    memset(aes_input, 0, inputslength/8);
-    memset(aes_key, 0, AES_KEYLENGTH/8);
+    memset(aes_input, 0, inputslength / 8);
+    memset(aes_key, 0, AES_KEYLENGTH / 8);
 
     hexStringToChar(aes_key, key);
-    strcpy((char*) aes_input, message.c_str());
+    strcpy((char*)aes_input, message.c_str());
 
     /* init vector */
     unsigned char iv[AES_BLOCK_SIZE];
@@ -60,8 +60,8 @@ void Decoder::encrypt()
 
     // buffers for encryption and decryption
     const size_t encslength = ((inputslength + AES_BLOCK_SIZE) / AES_BLOCK_SIZE) * AES_BLOCK_SIZE;
-    unsigned char enc_out[encslength];
-    unsigned char dec_out[inputslength];
+    unsigned char *enc_out = new unsigned char[encslength];
+    unsigned char *dec_out = new unsigned char[inputslength];
     memset(enc_out, 0, sizeof(enc_out));
     memset(dec_out, 0, sizeof(dec_out));
 
@@ -78,7 +78,7 @@ void Decoder::encrypt()
     enc_out_string = charToHexString(enc_out, sizeof(enc_out));
     sha = sha256(message);
 
-    if(!makeAndWriteDataToCiphertextFile(outputPath, sha, enc_out_string)) printf("Nie udalo sie zapisac\n");
+    if (!makeAndWriteDataToCiphertextFile(outputPath, sha, enc_out_string)) printf("Nie udalo sie zapisac\n");
 }
 
 void Decoder::decrypt()
@@ -90,11 +90,11 @@ void Decoder::decrypt()
     loadDataFromKeyFile(&ivData, &key);
     loadDataFromCiphertextFile(&sha, &data);
 
-    size_t inputslength = data.length()/2;
-    unsigned char aes_input[inputslength];
+    size_t inputslength = data.length() / 2;
+    unsigned char *aes_input = new unsigned char[inputslength];
     unsigned char aes_key[AES_KEYLENGTH];
-    memset(aes_input, 0, inputslength/8);
-    memset(aes_key, 0, AES_KEYLENGTH/8);
+    memset(aes_input, 0, inputslength / 8);
+    memset(aes_key, 0, AES_KEYLENGTH / 8);
 
     hexStringToChar(aes_input, data);
     hexStringToChar(aes_key, key);
@@ -105,8 +105,8 @@ void Decoder::decrypt()
     hexStringToChar(iv, ivData);
 
     // buffers for encryption and decryption
-    unsigned char enc_out[inputslength];
-    unsigned char dec_out[inputslength];
+    unsigned char *enc_out = new unsigned char[inputslength];
+    unsigned char *dec_out = new unsigned char[inputslength];
     memset(enc_out, 0, sizeof(enc_out));
     memset(dec_out, 0, sizeof(dec_out));
 
@@ -128,7 +128,7 @@ void Decoder::decrypt()
         return;
     }
 
-    if(!makeAndWriteDataToDecipheredTextFile(outputPath, dec_out_string)) printf("Nie udalo sie zapisac\n");
+    if (!makeAndWriteDataToDecipheredTextFile(outputPath, dec_out_string)) printf("Nie udalo sie zapisac\n");
 }
 
 bool Decoder::makeAndWriteDataToNewKeyFile(std::string path, std::string iv, std::string key)
@@ -268,6 +268,22 @@ void Decoder::fromAsciiToString(unsigned char *datain, int length)
 std::string Decoder::charToHexString(const void* pv, size_t len)
 {
     std::stringstream stream;
+    const unsigned char* p = (const unsigned char*)pv;
+    if (NULL == pv)
+        printf("NULL");
+    else
+    {
+        size_t i = 0;
+        for (; i < len; ++i)
+        {
+            int number = *p++;
+            stream << std::setfill('0') << std::setw(2) << std::hex << number;
+        }
+    }
+    std::string result = stream.str();
+    std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+
+    return result;
 }
 
 std::string Decoder::random_string( size_t length )
