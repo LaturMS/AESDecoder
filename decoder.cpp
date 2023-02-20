@@ -70,12 +70,12 @@ void Decoder::encrypt()
     AES_cbc_encrypt(aes_input, enc_out, inputslength, &enc_key, iv, AES_ENCRYPT);
 
     printf("original:\t");
-    hex_print(aes_input, sizeof(aes_input));
+    hex_print(aes_input, strlen((char*)aes_input));
     printf("encrypt:\t");
-    hex_print(enc_out, sizeof(enc_out));
+    hex_print(enc_out, encslength);
 
     std::string sha, enc_out_string;
-    enc_out_string = charToHexString(enc_out, sizeof(enc_out));
+    enc_out_string = charToHexString(enc_out, encslength);
     sha = sha256(message);
 
     if (!makeAndWriteDataToCiphertextFile(outputPath, sha, enc_out_string)) printf("Nie udalo sie zapisac\n");
@@ -107,17 +107,17 @@ void Decoder::decrypt()
     // buffers for encryption and decryption
     unsigned char *enc_out = new unsigned char[inputslength];
     unsigned char *dec_out = new unsigned char[inputslength];
-    memset(enc_out, 0, sizeof(enc_out));
-    memset(dec_out, 0, sizeof(dec_out));
+    memset(enc_out, 0, strlen((char*)enc_out));
+    memset(dec_out, 0, strlen((char*)dec_out));
 
     AES_KEY dec_key;
     AES_set_decrypt_key(aes_key, AES_KEYLENGTH, &dec_key);
     AES_cbc_encrypt(aes_input, dec_out, inputslength, &dec_key, iv, AES_DECRYPT);
 
     printf("original:\t");
-    hex_print(aes_input, sizeof(aes_input));
+    hex_print(aes_input, strlen((char*)aes_input));
     printf("decrypt:\t");
-    hex_print(dec_out, sizeof(dec_out));
+    hex_print(dec_out, strlen((char*)dec_out));
 
     std::string dec_out_string(reinterpret_cast<char*>(dec_out));
     std::string shaFromString = sha256(dec_out_string);
